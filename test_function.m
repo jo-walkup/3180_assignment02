@@ -1,22 +1,27 @@
 [roots, list] = newton_solver_multi(@test_function01, [1, 2, 3])
-[f, j] = test_function01(roots)
+
+[f_roots, j_roots] = test_function01(roots)
+approx_j_roots = approximate_jacobian(@test_function01, roots)
+
+[f_misc, j_misc] = test_function01([1, 2, 3])
+approx_j_misc = approximate_jacobian(@test_function01, [1, 2, 3])
 
 %the function name and input/output variable names
 %are just what I chose, you can use whatever names you'd like
 function [f_val,J_val] = test_function01(X)
-    X(1)
-    X(2)
-    X(3)
+    X(1);
+    X(2);
+    X(3);
 
     syms x1 x2 x3
 
     f1 = x1^2 + x2^2 - 6 - x3^5;
     f2 = x1*x3 +x2 - 12;
     f3 = sin(x1 + x2 + x3);
-    f = [f1; f2; f3]
+    f = [f1; f2; f3];
 
-    f_subs = subs(f, [x1, x2, x3], [X(1), X(2), X(3)])
-    f_val = double(f_subs)
+    f_subs = subs(f, [x1, x2, x3], [X(1), X(2), X(3)]);
+    f_val = double(f_subs);
 
     df1_dx1 = diff(f1, x1);
     df1_dx2 = diff(f1, x2);
@@ -36,23 +41,23 @@ end
 
 function [xn, x_list] = newton_solver_multi(fun,X0)
     syms x1 x2 x3
-    xn = X0'
+    xn = X0';
     x_list = [];
 
     max_iter = 100;
 
     for i = 1:max_iter
 
-        [F, J] = fun(xn)
+        [F, J] = fun(xn);
 
         if abs(F) < 0.00000000000000005
             return
         end
-        delta_x = J\F
-        xn1 = xn - delta_x
+        delta_x = J\F;
+        xn1 = xn - delta_x;
 
-        x_sub = subs(xn1, [x1; x2; x3], F)
-        x_dub = double(x_sub)
+        x_sub = subs(xn1, [x1; x2; x3], F);
+        x_dub = double(x_sub);
 
         x_list = [x_list, x_dub];
         
