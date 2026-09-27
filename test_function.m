@@ -1,8 +1,10 @@
 [f, J] = test_function01([1, 2, 3])
 
+newton_solver_multi(test_function01([1, 2, 3]), [1, 2, 3])
+
 %the function name and input/output variable names
 %are just what I chose, you can use whatever names you'd like
-function [f_val,J] = test_function01(X)
+function [f_val,J_val] = test_function01(X)
     X(1);
     X(2);
     X(3);
@@ -31,4 +33,3 @@ function [f_val,J] = test_function01(X)
     J_subs = subs(J, [x1, x2, x3], [X(1), X(2), X(3)]);
     J_val = double(J_subs);
 end
-
