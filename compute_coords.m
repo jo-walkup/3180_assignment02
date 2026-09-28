@@ -17,10 +17,15 @@ function vertex_coords_root = compute_coords(vertex_coords_guess, leg_params, th
     %solver, along with vertex_coords_guess to find the vertex coordinates
     %corresponding to the legal configuration of the linkage, 
     %given the values set for leg_params and theta
+    solver_params = struct();
+    solver_params.dxmin = 1e-14;
+    solver_params.ftol = 1e-14;
+    solver_params.max_iter = 200;
+    solver_params.dmax = 1e8;
+    solver_params.numerical_diff = 1;
+    xn = multi_newton_solver(link_wrapper,vertex_coords_guess, solver_params);
 
-    [~, x_list] = newton_solver_multi(link_wrapper,vertex_coords_guess);
-
-    vertex_coords_root=x_list;
+    vertex_coords_root=xn;
 end
 
 %Error function that encodes all necessary linkage constraints
@@ -60,21 +65,33 @@ end
 function length_errors = link_length_error_func(vertex_coords, leg_params)
     length_errors=[];
     i=1;
+    coords_out = column_to_matrix(vertex_coords);
+    for i = 1:10 %change this??
+        vertex1 = leg_params.link_to_vertex_list(i, 1);
+        vertex2 = leg_params.link_to_vertex_list(i, 2);
+        length = leg_params.link_lengths(i);
+        vertex1x = coords_out(vertex1, 1);
+        vertex1y = coords_out(vertex1, 2);
+        vertex2x = coords_out(vertex2, 1);
+        vertex2y = coords_out(vertex2, 2);
 
-    while i<=length(vertex_coords)
-
-        xb=vertex_coords(i);
-        yb=vertex_coords(i+1);
-    
-        xa=vertex_coords(i+2);
-        ya=vertex_coords(i+3);
-
-        d_i=leg_params.link_lengths(i);
-    
-        length_errors(i) = (xb-xa)^2 + (yb-ya)^2 - d_i^2;
-
-        i=i+4;
+        error = (vertex2x-vertex1x)^2 + (vertex2y-vertex1y)^2 - length^2;
+        length_errors = [length_errors; error];
     end
+    % while i<length(coords_out)
+    % 
+    %     xb=coords_out(i, 1);
+    %     yb=coords_out(i, 2);
+    % 
+    %     xa=coords_out(i+1, 1);
+    %     ya=coords_out(i+2, 2);
+    % 
+    %     d_i=leg_params.link_lengths(i);
+    %     error = (xb-xa)^2 + (yb-ya)^2 - d_i^2;
+    %     length_errors = [length_errors; error];
+    % 
+    %     i=i+1;
+    % end
 end
 
 %Error function that encodes the fixed vertex constraints
@@ -98,7 +115,8 @@ function coord_errors = fixed_coord_error_func(vertex_coords, leg_params, theta)
     y2 = vertex_coords(4);
     x1fix = leg_params.crank_length*sin(theta);
     y1fix = leg_params.crank_length*cos(theta);
-    [x2fix, y2fix] = leg_params.vertex_pos2;
+    x2fix = leg_params.vertex_pos2(1);
+    y2fix = leg_params.vertex_pos2(2);
     current = [x1; y1; x2; y2];
     fixed = [x1fix; y1fix; x2fix; y2fix];
     coord_errors = current - fixed;
