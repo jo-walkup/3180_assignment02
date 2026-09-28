@@ -1,5 +1,6 @@
 %runs strandbeest simulation
 function strandbeest_simulation()
+clf;
 
 set(groot, 'defaultTextInterpreter', 'latex');
 set(groot, 'defaultAxesTickLabelInterpreter', 'latex');
@@ -52,22 +53,38 @@ set(groot, 'defaultLegendInterpreter', 'latex');
     y_list=[];
     theta_list=[];
 
+    tip_vx_list=[];
+    tip_vy_list=[];
+
     hold on
     pathplot=plot(0,0,"k--");
+    tan_plot=plot(0,0, "g", "Markersize", 30);
    
     leg_drawing = initialize_leg_drawing(leg_params);
 
     
-    for theta=0:0.03:6*pi
+    for theta=0:0.03:2*pi
 
         complete_vertex_coords=compute_coords(vertex_coords_guess, leg_params, theta);
 
         update_leg_drawing(complete_vertex_coords, leg_drawing, leg_params);
 
+        dVdtheta = compute_velocities(complete_vertex_coords, leg_params, theta);
+
+
+        tip_vx_list(end+1)= dVdtheta(13)
+        tip_vy_list(end+1)= dVdtheta(14)
+
+        q = 1;
+        tan_plot_x = complete_vertex_coords(13)+[0,q*dVdtheta(13)];
+        tan_plot_y = complete_vertex_coords(14)+[0,q*dVdtheta(14)];
+        % set(tan_plot, 'xdata', tip_vx_list, 'ydata', tip_vy_list);
+        set(tan_plot, 'xdata', tan_plot_x, 'ydata', tan_plot_y);
+        theta_list(end+1) = theta;
+
         if theta<=2*pi
             x_list(end+1)= complete_vertex_coords(13);
             y_list(end+1)= complete_vertex_coords(14);
-            theta(end+1) = theta;
 
             set(pathplot, 'xdata', x_list, 'ydata', y_list);
 
@@ -78,4 +95,7 @@ set(groot, 'defaultLegendInterpreter', 'latex');
     end
     close(writerObj);
 
+    
+    plot(theta, tip_vx_list)
+    plot(theta, tip_vy_list)
 end
